@@ -2,13 +2,10 @@
 
 module MysticTutor.Deck (Deck (..), uploadDeck, listDecks) where
 
-import Control.Monad (when)
-import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Map (Map, insert)
+import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Text as T
-import Discord.Types (Message, messageChannelId, messageContent)
 import GHC.Generics (Generic)
 
 -- Define the structure of a Deck
@@ -27,8 +24,8 @@ type Decks = Map T.Text Deck
 
 -- Function to upload a Deck
 uploadDeck :: T.Text -> T.Text -> IO Decks -> IO Decks
-uploadDeck userId deckList decks = do
-  let cards = T.lines deckList -- Split by newlines
+uploadDeck userId newDeckList decks = do
+  let cards = T.lines newDeckList -- Split by newlines
   let newDeck = Deck {deckName = userId, deckList = cards}
   Map.insert userId newDeck <$> decks
 

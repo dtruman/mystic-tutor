@@ -1,7 +1,5 @@
 module MysticTutor.Logger (logMessage, setupLogger) where
 
-import Control.Monad.IO.Class (liftIO)
-import qualified Data.Text as T
 import Data.Time.Clock (getCurrentTime)
 import qualified System.Log.FastLogger as FL
 

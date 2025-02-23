@@ -4,13 +4,13 @@ import Control.Monad (when)
 import Discord
 import Discord.Types
 import qualified Data.Text as T
-import Deck (uploadDeck, listDecks)
+import MysticTutor.Deck (Deck, uploadDeck, listDecks)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad.IO.Class (liftIO)
 import Discord.Interactions (OptionDataSubcommand)
-import BotConfig (BotConfig(..), loadConfig)
-import Logger (logMessage, setupLogger)
+import MysticTutor.BotConfig (BotConfig(..), loadConfig)
+import MysticTutor.Logger (logMessage, setupLogger)
 
 main :: IO ()
 main = do
@@ -52,20 +52,20 @@ eventHandler logger (MessageCreate m) = do
     liftIO $ logMessage logger "Responded with Pong!"
 
   -- Check for !deck upload command
-  when (not (fromBot m) && T.isPrefixOf "!deck upload" message) $ do
-    let deckList = T.strip . T.drop 13 $ message -- Skip the "!deck upload " part
-    updatedDecks <- liftIO $ uploadDeck userId deckList decks
-    liftIO $ putStrLn $ "Deck uploaded: " ++ show updatedDecks
-    _ <- restCall (CreateMessage (messageChannelId m) "Deck uploaded successfully!")
+  -- when (not (fromBot m) && T.isPrefixOf "!deck upload" message) $ do
+  --   let deckList = T.strip . T.drop 13 $ message -- Skip the "!deck upload " part
+  --   updatedDecks <- liftIO $ uploadDeck userId deckList decks
+  --   liftIO $ putStrLn $ "Deck uploaded: " ++ show updatedDecks
+  --   _ <- restCall (CreateMessage (messageChannelId m) "Deck uploaded successfully!")
 
   -- Check for !deck list command
-  when (not (fromBot m) && T.isPrefixOf "!deck list" message) $ do
-    maybeDeck <- liftIO $ listDecks userId decks
-    case maybeDeck of
-      Just deck -> _ <- restCall (CreateMessage (messageChannelId m) (T.unlines deck))
-      Nothing -> _ <- restCall (CreateMessage (messageChannelId m) "You don't have any decks uploaded.")
+  -- when (not (fromBot m) && T.isPrefixOf "!deck list" message) $ do
+  --   maybeDeck <- liftIO $ listDecks userId decks
+  --   case maybeDeck of
+  --     Just deck -> _ <- restCall (CreateMessage (messageChannelId m) (T.unlines deck))
+  --     Nothing -> _ <- restCall (CreateMessage (messageChannelId m) "You don't have any decks uploaded.")
 
-eventHandler __ = pure ()
+eventHandler _ _ = pure ()
 
 fromBot :: Message -> Bool
 fromBot m = userIsBot (messageAuthor m)

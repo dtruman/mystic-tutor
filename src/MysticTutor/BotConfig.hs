@@ -2,7 +2,6 @@
 
 module MysticTutor.BotConfig (BotConfig (..), loadConfig) where
 
-import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (FromJSON)
 import qualified Data.Text as T
 import Data.Yaml (ParseException, decodeFileEither)

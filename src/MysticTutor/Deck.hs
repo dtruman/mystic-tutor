@@ -2,8 +2,8 @@
 
 module MysticTutor.Deck (Deck (..), uploadDeck, listDecks, decks) where
 
-import Control.Concurrent (newMVar, putMVar, readMVar)
-import Control.Concurrent.MVar (MVar, takeMVar)
+import Control.Concurrent (newMVar, readMVar)
+import Control.Concurrent.MVar (MVar)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -28,15 +28,14 @@ decks :: IO Decks
 decks = newMVar Map.empty
 
 -- Function to upload a Deck
-uploadDeck :: T.Text -> T.Text -> Decks -> IO ()
-uploadDeck userId newDeckList decksUp = do
-  mDecks <- takeMVar decksUp
+uploadDeck :: T.Text -> T.Text -> Map T.Text Deck -> IO (Map T.Text Deck)
+uploadDeck userId newDeckList mDecks = do
   let cards = T.lines newDeckList
   let newDeck = Deck {deckName = userId, deckList = cards}
 
   let updatedDecks = Map.insert userId newDeck mDecks
 
-  putMVar decksUp updatedDecks
+  return updatedDecks
 
 -- Function to list a user's Deck
 listDecks :: T.Text -> IO (MVar (Map T.Text Deck)) -> IO (Maybe [T.Text])

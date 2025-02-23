@@ -56,9 +56,9 @@ eventHandler logger (MessageCreate m) = do
     -- Upload deck to in-memory
     deckVar <- liftIO decks -- Get the MVar
     updatedDecks <- liftIO $ modifyMVar deckVar $ \decksMap -> do
-      newDeck <- uploadDeck (T.pack . show $ userIdFound) deckList decksMap
-      return (newDeck, newDeck) -- Returning new deck state
-    liftIO $ logMessage logger $ "Deck uploaded: " <> T.pack (show updatedDecks)
+      newDecksMap <- uploadDeck (T.pack . show $ userIdFound) deckList decksMap
+      return (newDecksMap, newDecksMap) -- Returning new deck state
+    liftIO $ logMessage logger $ T.append "Deck uploaded: " (T.pack (show updatedDecks))
     _ <- restCall (R.CreateMessage (messageChannelId m) "Deck uploaded successfully!")
     return ()
 

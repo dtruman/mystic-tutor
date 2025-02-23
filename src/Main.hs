@@ -11,6 +11,7 @@ import Control.Monad.IO.Class (liftIO)
 import Discord.Interactions (OptionDataSubcommand)
 import MysticTutor.BotConfig (BotConfig(..), loadConfig)
 import MysticTutor.Logger (logMessage, setupLogger)
+import System.Log.FastLogger (LoggerSet)
 
 main :: IO ()
 main = do

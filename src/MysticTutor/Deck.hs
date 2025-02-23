@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module MysticTutor.Deck (Deck (..), uploadDeck, listDecks) where
+module MysticTutor.Deck (Deck (..), uploadDeck, listDecks, decks) where
 
+import Control.Concurrent (newMVar, putMVar, readMVar)
+import Control.Concurrent.MVar (MVar, takeMVar)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -20,16 +22,24 @@ instance FromJSON Deck
 instance ToJSON Deck
 
 -- A simple in-memory database for decks
-type Decks = Map T.Text Deck
+type Decks = MVar (Map T.Text Deck)
+
+decks :: IO Decks
+decks = newMVar Map.empty
 
 -- Function to upload a Deck
-uploadDeck :: T.Text -> T.Text -> IO Decks -> IO Decks
-uploadDeck userId newDeckList decks = do
-  let cards = T.lines newDeckList -- Split by newlines
+uploadDeck :: T.Text -> T.Text -> Decks -> IO ()
+uploadDeck userId newDeckList decksUp = do
+  mDecks <- takeMVar decksUp
+  let cards = T.lines newDeckList
   let newDeck = Deck {deckName = userId, deckList = cards}
-  Map.insert userId newDeck <$> decks
+
+  let updatedDecks = Map.insert userId newDeck mDecks
+
+  putMVar decksUp updatedDecks
 
 -- Function to list a user's Deck
-listDecks :: T.Text -> IO Decks -> IO (Maybe [T.Text])
-listDecks userId decks = do
-  fmap deckList . Map.lookup userId <$> decks
+listDecks :: T.Text -> IO (MVar (Map T.Text Deck)) -> IO (Maybe [T.Text])
+listDecks userId decksLi = do
+  mDecks <- readMVar =<< decksLi
+  return $ Map.lookup userId mDecks >>= Just . deckList

@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module MysticTutor.BotConfig (BotConfig (..), loadConfig) where
 
-import Data.Aeson (FromJSON)
+import Data.Aeson (FromJSON, parseJSON, withObject, (.:))
 import qualified Data.Text as T
-import Data.Yaml (ParseException, decodeFileEither)
+import Data.Yaml (decodeFileEither)
+import Data.Yaml.Internal (ParseException)
 import GHC.Generics (Generic)
 
 -- Define the data type for bot configuration
@@ -15,7 +17,11 @@ data BotConfig = BotConfig
   deriving (Show, Generic)
 
 -- Automatically derive the FromJSON instance using GHC.Generics
-instance FromJSON BotConfig
+instance FromJSON BotConfig where
+  parseJSON = withObject "BotConfig" $ \v ->
+    BotConfig
+      <$> v .: "bot_token"
+      <*> v .: "log_level"
 
 -- Function to load and parse the YAML configuration file
 loadConfig :: FilePath -> IO (Either String BotConfig)

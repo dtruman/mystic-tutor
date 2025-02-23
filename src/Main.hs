@@ -1,19 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Concurrent.MVar (modifyMVar)
 import Control.Monad (when)
-import Discord
-import Discord.Types
-import qualified Discord.Requests as R
-import qualified Data.Text as T
-import MysticTutor.Deck (Deck, uploadDeck, listDecks, decks)
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.IO.Class (liftIO)
-import Discord.Interactions (OptionDataSubcommand)
-import MysticTutor.BotConfig (BotConfig(..), loadConfig)
+import qualified Data.Text as T
+import Discord
+import qualified Discord.Requests as R
+import Discord.Types
+import MysticTutor.BotConfig (BotConfig (..), loadConfig)
+import MysticTutor.Deck (decks, listDecks, uploadDeck)
 import MysticTutor.Logger (logMessage, setupLogger)
 import System.Log.FastLogger (LoggerSet)
-import Control.Concurrent.MVar (newMVar, modifyMVar, MVar, readMVar)
 
 main :: IO ()
 main = do
@@ -27,14 +24,15 @@ main = do
       logMessage logger "Loaded config successfully!"
 
       let token = botToken config
-      let logLevelSetting = logLevel config
 
       -- Set up and run discord bot
-      err <- runDiscord $ def
-        { discordToken = token,
-        discordOnEvent = eventHandler logger,
-        discordGatewayIntent = def
-        }
+      err <-
+        runDiscord $
+          def
+            { discordToken = token,
+              discordOnEvent = eventHandler logger,
+              discordGatewayIntent = def
+            }
 
       logMessage logger ("Bot stopped with error: " <> show err)
 
@@ -58,14 +56,15 @@ eventHandler logger (MessageCreate m) = do
     updatedDecks <- liftIO $ modifyMVar deckVar $ \decksMap -> do
       newDecksMap <- uploadDeck (T.pack . show $ userIdFound) deckList decksMap
       return (newDecksMap, newDecksMap) -- Returning new deck state
-    liftIO $ logMessage logger $ T.append "Deck uploaded: " (T.pack (show updatedDecks))
+    liftIO $ logMessage logger $ T.unpack ("Deck uploaded: " <> T.pack (show updatedDecks))
     _ <- restCall (R.CreateMessage (messageChannelId m) "Deck uploaded successfully!")
     return ()
 
   -- Check for !deck list command
   when (not (fromBot m) && T.isPrefixOf "!deck list" message) $ do
     deckVar <- liftIO decks -- Get the MVar
-    maybeDeckList <- liftIO $ listDecks userIdFound deckVar
+    maybeDeckList <- liftIO $ listDecks (T.pack . show $ userIdFound) deckVar
+    liftIO $ print maybeDeckList
     case maybeDeckList of
       Just deckList -> do
         let deckMessage = T.unlines deckList
@@ -74,7 +73,6 @@ eventHandler logger (MessageCreate m) = do
       Nothing -> do
         _ <- restCall (R.CreateMessage (messageChannelId m) "You don't have any decks uploaded.")
         return ()
-
 eventHandler _ _ = pure ()
 
 fromBot :: Message -> Bool

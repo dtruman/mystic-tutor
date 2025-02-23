@@ -38,6 +38,10 @@ executable mystic-tutor-exe
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
+  other-modules:
+    MysticTutor.BotConfig
+    MysticTutor.Logger
+    MysticTutor.Deck
   build-depends:       
     mystic-tutor,
     base >= 4.7 && < 5,

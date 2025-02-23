@@ -38,7 +38,7 @@ uploadDeck userId newDeckList mDecks = do
   return updatedDecks
 
 -- Function to list a user's Deck
-listDecks :: T.Text -> IO (MVar (Map T.Text Deck)) -> IO (Maybe [T.Text])
+listDecks :: T.Text -> MVar (Map T.Text Deck) -> IO (Maybe [T.Text])
 listDecks userId decksLi = do
-  mDecks <- readMVar =<< decksLi
+  mDecks <- readMVar decksLi
   return $ Map.lookup userId mDecks >>= Just . deckList
